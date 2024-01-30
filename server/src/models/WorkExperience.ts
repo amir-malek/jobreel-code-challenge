@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 import { IResume } from "./Resume";
 
-interface IWorkExperience {
+export interface IWorkExperience {
   title: string;
-  companyName: string;
+  company: string;
   startDate: string;
   endDate: string;
   description: string;
@@ -12,7 +12,7 @@ interface IWorkExperience {
 
 const workExperienceSchema = new mongoose.Schema<IWorkExperience>({
   title: { type: String, required: true },
-  companyName: { type: String, required: true },
+  company: { type: String, required: true },
   startDate: { type: String, required: true },
   endDate: { type: String },
   description: { type: String },

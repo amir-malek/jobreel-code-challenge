@@ -18,16 +18,27 @@ import { LoadingButton } from '@mui/lab';
 
 export default function ResumeList() {
     const [resumes, setResumes] = useState<IResume[]>([])
+    const [loading, setLoading] = useState<boolean>(false)
 
     useEffect(() => {
+        getResumes()
+    }, [])
+
+    const getResumes = () => {
         api.get('/resumes').then((r: AxiosResponse) => {
             setResumes(r.data.data.resumes)
         })
-    }, [])
+    }
 
 
-    const deleteResume = () => {
-        
+    const deleteResume = (resumeId: string | undefined) => {
+        if (resumeId) {
+            setLoading(true)
+            api.delete(`/resumes/${resumeId}`).then(() => {
+                setLoading(false)
+                getResumes()
+            })
+        }
     }
 
     return (
@@ -78,12 +89,13 @@ export default function ResumeList() {
                                         </Typography>
                                     </CardContent>
                                     <CardActions>
-                                        <Button size="small">View</Button>
+                                        <Button component={Link} to={`/resumes/${card._id}`} size="small">View</Button>
                                         <LoadingButton
                                             startIcon={<Delete />}
                                             size="small"
+                                            loading={loading}
                                             color='error'
-                                            onClick={deleteResume}
+                                            onClick={() => deleteResume(card._id)}
                                         >
                                             Delete
                                         </LoadingButton>

@@ -3,6 +3,7 @@ import Resume from "../models/Resume";
 import WorkExperience from "../models/WorkExperience";
 import { resumesValidator } from "../validators";
 import { NotFoundError } from "../utils/apiError";
+import mongoose from "mongoose";
 
 const resumeController = {
   list: async (req: Request, res: Response, next: NextFunction) => {
@@ -36,19 +37,24 @@ const resumeController = {
       });
       await resume.save();
 
+      const workExperienceIds = [];
       for (let i = 0; i < validatedData?.workExperience.length; i++) {
         const we = validatedData?.workExperience[i];
 
         const workExperience = new WorkExperience({
           title: we.title,
-          companyName: we.company,
+          company: we.company,
           description: we.description,
           startDate: we.startDate,
           endDate: Boolean(we.currentlyWorking) ? null : we.endDate,
           resume: resume._id,
         });
         await workExperience.save();
+        workExperienceIds.push(workExperience._id);
       }
+
+      resume.workExperience = workExperienceIds;
+      await resume.save();
 
       res.send({
         message: "Data submitted successfully",
@@ -59,7 +65,9 @@ const resumeController = {
   },
   show: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const resume = await Resume.findById(req.params.resumeId);
+      const resume = await Resume.findById(req.params.resumeId).populate(
+        "workExperience"
+      );
 
       if (!resume) {
         throw new NotFoundError("Resume not found");
@@ -77,7 +85,7 @@ const resumeController = {
   },
   update: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const resumeId = req.params.id;
+      const resumeId = req.params.resumeId;
       const validatedData = await resumesValidator.validateCreateResume(
         req.body
       );
@@ -100,17 +108,22 @@ const resumeController = {
 
       await WorkExperience.deleteMany({ resume: resume._id });
 
+      const workExperienceIds = [];
       for (const we of validatedData.workExperience) {
         const workExperience = new WorkExperience({
           title: we.title,
-          companyName: we.company,
+          company: we.company,
           description: we.description,
           startDate: we.startDate,
           endDate: Boolean(we.currentlyWorking) ? null : we.endDate,
           resume: resume._id,
         });
         await workExperience.save();
+        workExperienceIds.push(workExperience._id);
       }
+
+      resume.workExperience = workExperienceIds;
+      await resume.save();
 
       res.send({ message: "Resume updated successfully" });
     } catch (e) {

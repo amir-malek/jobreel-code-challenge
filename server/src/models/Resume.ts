@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import { IUser } from "./User";
+import { IWorkExperience } from "./WorkExperience";
+import { ObjectId } from "mongodb";
 
 export interface IResume {
   firstName: string;
@@ -8,6 +10,7 @@ export interface IResume {
   email: string;
   phone: string;
   user: IUser;
+  workExperience: IWorkExperience[] | ObjectId[]
 }
 
 const resumeSchema = new mongoose.Schema<IResume>({
@@ -21,6 +24,10 @@ const resumeSchema = new mongoose.Schema<IResume>({
     ref: "User",
     required: true,
   },
+  workExperience: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'WorkExperience'
+  }]
 });
 
 const Resume = mongoose.model<IResume>("Resume", resumeSchema);

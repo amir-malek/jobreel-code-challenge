@@ -11,7 +11,7 @@ const resumesValidator = {
         description: yup.string().required(),
         startDate: yup.date().required(),
         endDate: yup.string().nullable(),
-        currentlyWorking: yup.string(),
+        currentlyWorking: yup.boolean().required(),
       });
 
       const schema = yup.object().shape({
